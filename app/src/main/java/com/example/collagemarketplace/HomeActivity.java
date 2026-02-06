@@ -52,6 +52,12 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(HomeActivity.this, AddItemActivity.class))
         );
         loadItems();
+        Button inboxBtn = findViewById(R.id.inboxBtn);
+
+        inboxBtn.setOnClickListener(v ->
+                startActivity(new Intent(HomeActivity.this, InboxActivity.class))
+        );
+
 
 
         logoutBtn.setOnClickListener(v -> {
@@ -63,13 +69,18 @@ public class HomeActivity extends AppCompatActivity {
         private void loadItems() {
             db.collection("items")
                     .get()
-                    .addOnSuccessListener(query -> {
+                    .addOnSuccessListener(querySnapshot -> {
                         itemList.clear();
-                        for (QueryDocumentSnapshot doc : query) {
+                        for (QueryDocumentSnapshot doc : querySnapshot) {
                             Item item = doc.toObject(Item.class);
+                            item.id = doc.getId();   // VERY IMPORTANT
                             itemList.add(item);
                         }
                         adapter.notifyDataSetChanged();
+                    })
+                        .addOnFailureListener(e -> {
+                            e.printStackTrace();
+
                     });
     }
 }

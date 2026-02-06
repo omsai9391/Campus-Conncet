@@ -62,7 +62,7 @@ public class AddItemActivity extends AppCompatActivity {
         item.put("title", title);
         item.put("price", price);
         item.put("description", description);
-        item.put("userId", userId);
+        item.put("sellerId", userId);
         item.put("timestamp", System.currentTimeMillis());
 
         db.collection("items")

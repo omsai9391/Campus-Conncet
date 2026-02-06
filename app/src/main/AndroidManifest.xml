@@ -11,7 +11,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CollageMarketplace">
-
+        <activity
+            android:name=".InboxActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ChatActivity"
+            android:exported="true" />
         <activity
             android:name=".LoginActivity"
             android:exported="true"
@@ -27,7 +32,6 @@
         <activity
             android:name=".RegisterActivity"
             android:exported="true" />
-
-
     </application>
+
 </manifest>
