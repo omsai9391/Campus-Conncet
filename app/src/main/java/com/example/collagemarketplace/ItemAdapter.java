@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,11 +34,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
                 .inflate(R.layout.item_row, parent, false);
         return new ViewHolder(v);
     }
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-
         Item item = itemList.get(position);
 
         holder.titleTv.setText(item.title);
@@ -55,45 +54,43 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
             holder.itemImage.setImageResource(android.R.drawable.ic_menu_gallery);
         }
 
-        // Hide chat button if seller is current user
+        // Show SOLD overlay if item is sold
+        if (item.sold) {
+            holder.soldTv.setVisibility(View.VISIBLE);
+            holder.chatBtn.setEnabled(false);
+            holder.chatBtn.setText("Item Sold");
+        } else {
+            holder.soldTv.setVisibility(View.GONE);
+            holder.chatBtn.setEnabled(true);
+            holder.chatBtn.setText("Chat with Seller");
+        }
+
+        // Handle visibility based on Seller/Buyer role
         if (item.sellerId != null && item.sellerId.equals(currentUserId)) {
-
-            // Seller view
+            // I am the Seller
             holder.chatBtn.setVisibility(View.GONE);
-            holder.deleteBtn.setVisibility(View.VISIBLE);
+            holder.sellerActionLayout.setVisibility(View.VISIBLE);
 
-            holder.deleteBtn.setOnClickListener(v -> {
+            // Handle "Mark as Sold" button
+            if (item.sold) {
+                holder.soldBtn.setVisibility(View.GONE);
+            } else {
+                holder.soldBtn.setVisibility(View.VISIBLE);
+                holder.soldBtn.setOnClickListener(v -> markItemAsSold(item, holder.getAdapterPosition()));
+            }
 
-                FirebaseFirestore.getInstance()
-                        .collection("items")
-                        .document(item.id)
-                        .delete()
-                        .addOnSuccessListener(aVoid -> {
-
-                            int currentPosition = holder.getAdapterPosition();
-
-                            if (currentPosition != RecyclerView.NO_POSITION) {
-                                itemList.remove(currentPosition);
-                                notifyItemRemoved(currentPosition);
-                                notifyItemRangeChanged(currentPosition, itemList.size());
-                            }
-
-                        })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(v.getContext(),
-                                        "Delete failed",
-                                        Toast.LENGTH_SHORT).show()
-                        );
-            });
-
+            holder.deleteBtn.setOnClickListener(v -> deleteItem(item, holder.getAdapterPosition()));
 
         } else {
-
-            // Buyer view
+            // I am the Buyer
             holder.chatBtn.setVisibility(View.VISIBLE);
-            holder.deleteBtn.setVisibility(View.GONE);
+            holder.sellerActionLayout.setVisibility(View.GONE);
 
             holder.chatBtn.setOnClickListener(v -> {
+                if (item.sold) {
+                    Toast.makeText(v.getContext(), "Sorry, this item is already sold!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 Intent intent = new Intent(v.getContext(), ChatActivity.class);
                 intent.putExtra("itemId", item.id);
                 intent.putExtra("sellerId", item.sellerId);
@@ -101,8 +98,31 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
                 v.getContext().startActivity(intent);
             });
         }
+    }
 
+    private void markItemAsSold(Item item, int position) {
+        FirebaseFirestore.getInstance()
+                .collection("items")
+                .document(item.id)
+                .update("sold", true)
+                .addOnSuccessListener(aVoid -> {
+                    item.sold = true;
+                    notifyItemChanged(position);
+                    Toast.makeText(FirebaseAuth.getInstance().getApp().getApplicationContext(), "Marked as Sold", Toast.LENGTH_SHORT).show();
+                });
+    }
 
+    private void deleteItem(Item item, int position) {
+        FirebaseFirestore.getInstance()
+                .collection("items")
+                .document(item.id)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    if (position != RecyclerView.NO_POSITION) {
+                        itemList.remove(position);
+                        notifyItemRemoved(position);
+                    }
+                });
     }
 
     @Override
@@ -111,21 +131,22 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-
         ImageView itemImage;
-        TextView titleTv, priceTv, descTv;
-        Button chatBtn, deleteBtn;
+        TextView titleTv, priceTv, descTv, soldTv;
+        Button chatBtn, deleteBtn, soldBtn;
+        LinearLayout sellerActionLayout;
 
         ViewHolder(View itemView) {
             super(itemView);
-
             itemImage = itemView.findViewById(R.id.itemImage);
             titleTv = itemView.findViewById(R.id.titleTv);
             priceTv = itemView.findViewById(R.id.priceTv);
             descTv = itemView.findViewById(R.id.descTv);
+            soldTv = itemView.findViewById(R.id.soldTv);
             chatBtn = itemView.findViewById(R.id.chatBtn);
             deleteBtn = itemView.findViewById(R.id.deleteBtn);
+            soldBtn = itemView.findViewById(R.id.soldBtn);
+            sellerActionLayout = itemView.findViewById(R.id.sellerActionLayout);
         }
     }
-
 }

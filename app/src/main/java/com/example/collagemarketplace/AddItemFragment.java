@@ -1,5 +1,6 @@
 package com.example.collagemarketplace;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,9 +21,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class AddItemFragment extends Fragment {
 
@@ -42,13 +45,9 @@ public class AddItemFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_item, container, false);
 
-        // Initialize views properly
         titleEt = view.findViewById(R.id.titleEt);
         priceEt = view.findViewById(R.id.priceEt);
         descriptionEt = view.findViewById(R.id.descriptionEt);
@@ -62,7 +61,7 @@ public class AddItemFragment extends Fragment {
         storageRef = storage.getReference();
 
         selectImageBtn.setOnClickListener(v -> openGallery());
-        postBtn.setOnClickListener(v -> postItem());
+        postBtn.setOnClickListener(v -> uploadImageAndPost());
 
         return view;
     }
@@ -76,55 +75,84 @@ public class AddItemFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 1 && data != null) {
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK && data != null) {
             imageUri = data.getData();
             itemImage.setImageURI(imageUri);
         }
     }
 
-    private void postItem() {
-
+    private void uploadImageAndPost() {
         String title = titleEt.getText().toString().trim();
         String price = priceEt.getText().toString().trim();
-        String description = descriptionEt.getText().toString().trim();
-
         if (TextUtils.isEmpty(title) || TextUtils.isEmpty(price)) {
-            Toast.makeText(getContext(), "Fill required fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Title and Price are required", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (auth.getCurrentUser() == null) return;
+        if (imageUri == null) {
+            postItem(null); 
+        } else {
+            postBtn.setEnabled(false);
+            postBtn.setText("Uploading...");
+            
+            String fileName = UUID.randomUUID().toString();
+            final StorageReference ref = storageRef.child("item_images/" + fileName);
 
+            UploadTask uploadTask = ref.putFile(imageUri);
+            
+            uploadTask.continueWithTask(task -> {
+                if (!task.isSuccessful()) {
+                    if (task.getException() != null) {
+                        throw task.getException();
+                    }
+                }
+                return ref.getDownloadUrl();
+            }).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Uri downloadUri = task.getResult();
+                    if (downloadUri != null) {
+                        postItem(downloadUri.toString());
+                    }
+                } else {
+                    postBtn.setEnabled(true);
+                    postBtn.setText("Post Item");
+                    String error = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                    Toast.makeText(getContext(), "Upload failed: " + error, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    }
+
+    private void postItem(String downloadUrl) {
+        if (auth.getCurrentUser() == null) return;
         String sellerId = auth.getCurrentUser().getUid();
 
         Map<String, Object> item = new HashMap<>();
-        item.put("title", title);
-        item.put("price", price);
-        item.put("description", description);
+        item.put("title", titleEt.getText().toString().trim());
+        item.put("price", priceEt.getText().toString().trim());
+        item.put("description", descriptionEt.getText().toString().trim());
         item.put("sellerId", sellerId);
         item.put("timestamp", System.currentTimeMillis());
+        item.put("sold", false);
+        if (downloadUrl != null) item.put("imageUrl", downloadUrl);
 
-        // Only add imageUrl if image selected
-        if (imageUri != null) {
-            item.put("imageUrl", imageUri.toString());
-        }
-
-        db.collection("items")
-                .add(item)
-                .addOnSuccessListener(doc -> {
-                    Toast.makeText(getContext(), "Item Posted", Toast.LENGTH_SHORT).show();
-                    titleEt.setText("");
-                    priceEt.setText("");
-                    descriptionEt.setText("");
-                    itemImage.setImageResource(android.R.drawable.ic_menu_gallery);
-                    imageUri = null;
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+        db.collection("items").add(item).addOnSuccessListener(doc -> {
+            Toast.makeText(getContext(), "Item Posted Successfully", Toast.LENGTH_SHORT).show();
+            clearFields();
+        }).addOnFailureListener(e -> {
+            postBtn.setEnabled(true);
+            postBtn.setText("Post Item");
+            Toast.makeText(getContext(), "Post failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        });
     }
 
-
+    private void clearFields() {
+        titleEt.setText("");
+        priceEt.setText("");
+        descriptionEt.setText("");
+        itemImage.setImageResource(android.R.drawable.ic_menu_gallery);
+        imageUri = null;
+        postBtn.setEnabled(true);
+        postBtn.setText("Post Item");
+    }
 }
-

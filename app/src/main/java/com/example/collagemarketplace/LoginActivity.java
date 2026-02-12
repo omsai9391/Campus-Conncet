@@ -1,13 +1,12 @@
 package com.example.collagemarketplace;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.content.Intent;
-
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,11 +14,11 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends AppCompatActivity {
 
-    EditText emailEt, passwordEt;
-    Button loginBtn;
-    TextView registerTv;
+    private EditText emailEt, passwordEt;
+    private Button loginBtn;
+    private TextView registerTv, forgotPasswordTv;
 
-    FirebaseAuth auth;
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,12 +29,18 @@ public class LoginActivity extends AppCompatActivity {
         passwordEt = findViewById(R.id.passwordEt);
         loginBtn = findViewById(R.id.loginBtn);
         registerTv = findViewById(R.id.registerTv);
+        forgotPasswordTv = findViewById(R.id.forgotPasswordTv);
 
         auth = FirebaseAuth.getInstance();
 
         loginBtn.setOnClickListener(v -> loginUser());
+        
         registerTv.setOnClickListener(v ->
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class))
+        );
+
+        forgotPasswordTv.setOnClickListener(v -> 
+                startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class))
         );
 
     }
@@ -44,8 +49,15 @@ public class LoginActivity extends AppCompatActivity {
         String email = emailEt.getText().toString().trim();
         String password = passwordEt.getText().toString().trim();
 
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Fill all fields", Toast.LENGTH_SHORT).show();
+        if (email.isEmpty()) {
+            emailEt.setError("Email is required");
+            emailEt.requestFocus();
+            return;
+        }
+
+        if (password.isEmpty()) {
+            passwordEt.setError("Password is required");
+            passwordEt.requestFocus();
             return;
         }
 
@@ -53,12 +65,10 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-                        // Next: go to HomeActivity
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
                         finish();
-
                     } else {
-                        Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

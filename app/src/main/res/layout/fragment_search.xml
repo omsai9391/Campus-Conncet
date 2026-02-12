@@ -1,81 +1,159 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="12dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background">
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:background="@drawable/search_bg"
-        android:padding="8dp"
+    <!-- 🔥 Gradient Header -->
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@drawable/gradient_bg_dark"
+        app:elevation="0dp">
 
-        <EditText
-            android:id="@+id/searchEt"
-            android:hint="Search items..."
-            android:layout_weight="1"
-            android:background="@null"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
-        <ImageView
-            android:id="@+id/searchBtn"
-            android:src="@android:drawable/ic_menu_search"
-            android:layout_width="24dp"
-            android:layout_height="24dp"/>
+            <!-- 🔍 SEARCH BAR -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#1AFFFFFF"
+                app:strokeColor="@color/colorSecondary"
+                app:strokeWidth="1dp">
 
-    </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp">
 
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@android:drawable/ic_menu_search"
+                        app:tint="@color/colorSecondary" />
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp"
+                    <EditText
+                        android:id="@+id/searchEt"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="Search items..."
+                        android:textColor="@color/textPrimary"
+                        android:textColorHint="@color/hintColor"
+                        android:padding="14dp"
+                        android:textSize="16sp"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text" />
+
+                    <ImageView
+                        android:id="@+id/searchBtn"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:padding="4dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@android:drawable/ic_menu_send"
+                        app:tint="@color/colorSecondary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 🔥 PRICE FILTER SECTION -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Min Price"
+                    app:boxStrokeColor="@color/colorSecondary"
+                    app:hintTextColor="@color/hintColor">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/minPriceET"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:textColor="@color/textPrimary"
+                        android:textColorHint="@color/hintColor"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <View
+                    android:layout_width="12dp"
+                    android:layout_height="match_parent" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Max Price"
+                    app:boxStrokeColor="@color/colorSecondary"
+                    app:hintTextColor="@color/hintColor">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/maxPriceEt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:textColor="@color/textPrimary"
+                        android:textColorHint="@color/hintColor"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/filterBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="Filter"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/colorSecondary"
+                    app:cornerRadius="12dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- 🔥 RESULT AREA -->
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <EditText
-            android:id="@+id/minPriceET"
-            android:hint="Min Price"
-            android:inputType="number"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"/>
-
-        <EditText
-            android:id="@+id/maxPriceEt"
-            android:hint="Max Price"
-            android:inputType="number"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"/>
-
-        <Button
-            android:id="@+id/filterBtn"
-            android:text="Filter"
-            android:layout_marginStart="8dp"
+        <TextView
+            android:id="@+id/noResultsTv"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
-    <TextView
-        android:id="@+id/noResultsTv"
-        android:text="No results found"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:visibility="gone"
-        android:layout_marginTop="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="No results found"
+            android:textSize="18sp"
+            android:textColor="@color/textPrimary"
+            android:textStyle="bold"
+            android:visibility="gone" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/searchRv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:clipToPadding="false"
+            tools:listitem="@layout/item_row" />
+    </RelativeLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/searchRv"
-        android:layout_marginTop="12dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

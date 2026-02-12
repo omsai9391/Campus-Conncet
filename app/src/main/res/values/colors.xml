@@ -1,5 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+
+    <!-- Base Dark -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Background -->
+    <color name="background">#262859</color>
+    <color name="surface">#1B1B2D</color>
+
+    <!-- Primary Aura Purple -->
+    <color name="colorPrimary">#7C4DFF</color>
+    <color name="colorPrimaryVariant">#651FFF</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+
+    <!-- Electric Blue Accent -->
+    <color name="colorSecondary">#7C4DFF</color>
+    <color name="colorSecondaryVariant">#00B8D4</color>
+    <color name="colorOnSecondary">#000000</color>
+
+    <!-- Text Colors -->
+    <color name="onBackground">#E0E0FF</color>
+    <color name="onSurface">#CFCFFF</color>
+
+    <!-- Glow Effect -->
+    <color name="neonGlow">#9C27B0</color>
+    <color name="cardDark">#1B1B2D</color>
+    <color name="textSecondary">#9CA3AF</color>
+    <color name="textPrimary">#FFFFFF</color>
+    <color name="hintColor">#80FFFFFF</color>
+
+    <!-- Error -->
+    <color name="error">#FF1744</color>
+
 </resources>
